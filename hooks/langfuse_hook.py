@@ -473,6 +473,14 @@ def extract_text_from_content(content: Any) -> str:
         for x in content:
             if isinstance(x, dict) and x.get("type") == "text":
                 parts.append(x.get("text", ""))
+            elif isinstance(x, dict) and x.get("type") == "thinking":
+                # Max-capture: include extended-thinking text. Claude Code's raw-body OTEL
+                # logger redacts thinking to "<REDACTED>", but the transcript rows this plugin
+                # reads carry the full (summarized) thinking — surface it, tagged so it stays
+                # distinguishable from the final answer in the Langfuse observation.
+                t = x.get("thinking", "")
+                if t:
+                    parts.append("[thinking] " + t)
             elif isinstance(x, str):
                 parts.append(x)
         return "\n".join([p for p in parts if p])
